@@ -107,3 +107,86 @@ Presenter - презентер содержит основную логику п
 `on<T extends object>(event: EventName, callback: (data: T) => void): void` - подписка на событие, принимает название события и функцию обработчик.  
 `emit<T extends object>(event: string, data?: T): void` - инициализация события. При вызове события в метод передается название события и объект с данными, который будет использован как аргумент для вызова обработчика.  
 `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие с передачей в него данных из второго параметра.
+
+## Данные
+
+В приложении используются две сущности, которые описывают данные — товар и покупатель
+
+### интерфейс IProduct (товар)
+
+Описывает данные по одному товару
+
+```
+interface IProduct {
+    id: string;               // уникальный ID товара
+    description: string;      // описание
+    image: string;            // изображение
+    title: string;            // название
+    category: string;         // группа/категория
+    price: number | null;     // цена (число/пустота)
+}
+```
+
+### интерфейс IBuyer (покупатель)
+
+Данные, которые должны быть для успешного оформления заказа
+
+```
+interface IBuyer {
+    payment: TPayment;        // вид/способ оплаты (card/cash - строки)
+    email: string;            // электронный адрес почты
+    phone: string;            // телефон (строка)
+    address: string;          // адрес (строка с пробелами)
+} 
+```
+
+## Модели данных
+
+Классы для учёта данных в приложении
+
+### Класс ItemsCatalog
+
+Все товары, которые можно купить в приложении
+
+```
+class ItemsCatalog {
+  private products: IProduct[] = [];                  // массив всех товаров
+  private selectedProduct: IProduct | null = null;    // товар, выбранный для подробного отображения
+
+  // сохранение массива товаров, полученного в параметрах метода
+  public saveProducts(products: IProduct[]): void {
+    this.products = products; 
+  }
+
+  // получение массива товаров из модели
+  public getProducts(): IProduct[] {
+    return this.products; 
+  }
+
+  // получение одного товара по его id
+  public getProductById(id: string): IProduct | undefined {
+    return this.products.find(product => product.id === id);
+  }
+
+  // сохранение товара для подробного отображения
+  public saveSelectedProduct(product: IProduct): void {
+    this.selectedProduct = product;
+  }
+
+  // получение товара для подробного отображения
+  public getSelectedProduct(): IProduct | null {
+    return this.selectedProduct;
+  }
+}
+```
+
+### Класс Cart
+
+Товары, которые пользователь выбрал для покупки
+
+### Класс Buyer
+
+Данные покупателя, которые тот должен указать при оформлении заказа
+
+
+
