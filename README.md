@@ -137,7 +137,7 @@ interface IBuyer {
     email: string;            // электронный адрес почты
     phone: string;            // телефон (строка)
     address: string;          // адрес (строка с пробелами)
-} 
+}
 ```
 
 ## Модели данных
@@ -150,43 +150,89 @@ interface IBuyer {
 
 ```
 class ItemsCatalog {
-  private products: IProduct[] = [];                  // массив всех товаров
-  private selectedProduct: IProduct | null = null;    // товар, выбранный для подробного отображения
+  private items: IProduct[] = [];                  // массив всех товаров
+  private selectedItem: IProduct | null = null;    // товар, выбранный для подробного отображения
 
   // сохранение массива товаров, полученного в параметрах метода
-  public saveProducts(products: IProduct[]): void {
-    this.products = products; 
+  public saveItems(items: IProduct[]): void {
+    this.items = items;
   }
 
   // получение массива товаров из модели
-  public getProducts(): IProduct[] {
-    return this.products; 
+  public getItems(): IProduct[] {
+    return this.items;
   }
 
   // получение одного товара по его id
-  public getProductById(id: string): IProduct | undefined {
-    return this.products.find(product => product.id === id);
+  public getItemById(id: string): IProduct | undefined {
+    return this.items.find(item => item.id === id);
   }
 
   // сохранение товара для подробного отображения
-  public saveSelectedProduct(product: IProduct): void {
-    this.selectedProduct = product;
+  public saveSelectedItem(item: IProduct): void {
+    this.selectedItem = item;
   }
 
   // получение товара для подробного отображения
-  public getSelectedProduct(): IProduct | null {
-    return this.selectedProduct;
+  public getSelectedItem(): IProduct | null {
+    return this.selectedItem;
   }
 }
 ```
 
 ### Класс Cart
 
-Товары, которые пользователь выбрал для покупки
+Хранит массив товаров, выбранных покупателем для покупки
+
+```
+class Cart {
+  private items: IProduct[] = [];        // товары, которые пользователь выбрал для покупки
+
+  // получение массива товаров, которые находятся в корзине
+  public getItems(): IProduct[] {
+    return this.items;
+  }
+
+  // добавление товара, который был получен в параметре, в массив корзины
+  public addItem(product: IProduct): void {
+    this.items.push(product);
+  }
+
+  // удаление товара, полученного в параметре из массива корзины
+  public removeItem(product: IProduct): void {
+    const index = this.items.findIndex(item => item.id === product.id);
+    if (index !== -1) {
+      this.items.splice(index, 1);
+    } else {
+      console.warn(`Товар с id ${product.id} не найден в корзине`);
+    }
+  }
+
+  // очистка корзины
+  public clear(): void {
+    this.items = [];
+  }
+
+  // получение стоимости всех товаров в корзине
+  public getTotalPrice(): number {
+    return this.items.reduce((total, item) => {
+      return total + (item.price || 0);
+    }, 0);
+  }
+
+  // получение количества товаров в корзине
+  public getCount(): number {
+    return this.items.length;
+  }
+
+  // проверка наличия товара в корзине по его id, полученного в параметр метода
+  public hasItem(id: string): boolean {
+    return this.items.some(item => item.id === id);
+  }
+
+}
+```
 
 ### Класс Buyer
 
 Данные покупателя, которые тот должен указать при оформлении заказа
-
-
-
