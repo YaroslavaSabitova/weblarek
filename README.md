@@ -146,182 +146,50 @@ interface IBuyer {
 
 ### Класс ItemsCatalog
 
-Все товары, которые можно купить в приложении
+Хранит все товары, которые можно купить в приложении
 
-```
-class ItemsCatalog {
-  private items: IProduct[] = [];                  // массив всех товаров
-  private selectedItem: IProduct | null = null;    // товар, выбранный для подробного отображения
+Поля класса:  
+`items: IProduct[] = []` - массив всех товаров  
+`selectedItem: IProduct | null = null` - товар, выбранный для подробного отображения
 
-  // сохранение массива товаров, полученного в параметрах метода
-  public saveItems(items: IProduct[]): void {
-    this.items = items;
-  }
-
-  // получение массива товаров из модели
-  public getItems(): IProduct[] {
-    return this.items;
-  }
-
-  // получение одного товара по его id
-  public getItemById(id: string): IProduct | undefined {
-    return this.items.find(item => item.id === id);
-  }
-
-  // сохранение товара для подробного отображения
-  public saveSelectedItem(item: IProduct): void {
-    this.selectedItem = item;
-  }
-
-  // получение товара для подробного отображения
-  public getSelectedItem(): IProduct | null {
-    return this.selectedItem;
-  }
-}
-```
+Методы класса:
+`saveItems(items: IProduct[]): void` - сохранение массива товаров, полученного в параметрах метода
+`getItems(): IProduct[]` - получение массива товаров из модели
+`getItemById(id: string): IProduct | undefined` - получение одного товара по его id
+`saveSelectedItem(item: IProduct): void` - сохранение товара для подробного отображения
+`getSelectedItem(): IProduct | null` - получение товара для подробного отображения
 
 ### Класс Cart
 
 Хранит массив товаров, выбранных покупателем для покупки
 
-```
-class Cart {
-  private items: IProduct[] = [];        // товары, которые пользователь выбрал для покупки
+Поля класса:
+`items: IProduct[] = []` - товары, которые пользователь выбрал для покупки
 
-  // получение массива товаров, которые находятся в корзине
-  public getItems(): IProduct[] {
-    return this.items;
-  }
-
-  // добавление товара, который был получен в параметре, в массив корзины
-  public addItem(product: IProduct): void {
-    this.items.push(product);
-  }
-
-  // удаление товара, полученного в параметре из массива корзины
-  public removeItem(product: IProduct): void {
-    const index = this.items.findIndex(item => item.id === product.id);
-    if (index !== -1) {
-      this.items.splice(index, 1);
-    } else {
-      console.warn(`Товар с id ${product.id} не найден в корзине`);
-    }
-  }
-
-  // очистка корзины
-  public clear(): void {
-    this.items = [];
-  }
-
-  // получение стоимости всех товаров в корзине
-  public getTotalPrice(): number {
-    return this.items.reduce((total, item) => {
-      return total + (item.price || 0);
-    }, 0);
-  }
-
-  // получение количества товаров в корзине
-  public getCount(): number {
-    return this.items.length;
-  }
-
-  // проверка наличия товара в корзине по его id, полученного в параметр метода
-  public hasItem(id: string): boolean {
-    return this.items.some(item => item.id === id);
-  }
-
-}
-```
+Методы класса:
+`getItems(): IProduct[]` - получение массива товаров, которые находятся в корзине
+`addItem(product: IProduct): void` - добавление товара, который был получен в параметре, в массив корзины
+`removeItem(product: IProduct): void` - удаление товара, полученного в параметре из массива корзины
+`clear(): void` - очистка корзины
+`getTotalPrice(): number` - получение стоимости всех товаров в корзине
+`getCount(): number` - получение количества товаров в корзине
+`hasItem(id: string): boolean` - проверка наличия товара в корзине по его id, полученного в параметр метода
 
 ### Класс Buyer
 
 Данные покупателя, которые тот должен указать при оформлении заказа
 
-```
-class Buyer {
-  private payment: TPayment = "";        // вид/способ оплаты (card/cash - строки)
-  private email: string = "";            // электронный адрес почты
-  private phone: string = "";            // телефон (строка)
-  private address: string = "";          // адрес (строка с пробелами)
+Поля класса:
+`payment: TPayment = ""` - вид/способ оплаты (card/cash - строки)
+`email: string = ""` - электронный адрес почты (строка)
+`phone: string = ""` - телефон (строка)
+`address: string = ""` - адрес доставки (строка с пробелами)
 
-  // сохранение данных в модели
-  setData(data: Partial<IBuyer>): void {
-    if (data.payment !== undefined) {
-      this.payment = data.payment;
-    }
-
-    if (data.email !== undefined) {
-      this.email = data.email;
-    }
-
-    if (data.phone !== undefined) {
-      this.phone = data.phone;
-    }
-
-    if (data.address !== undefined) {
-      this.address = data.address;
-    }
-  }
-
-  // получение всех данных покупателя
-  getData(): IBuyer {
-    return {
-      payment: this.payment,
-      email: this.email,
-      phone: this.phone,
-      address: this.address
-    };
-  }
-
-  // очистка данных покупателя
-  clear(): void {
-    this.payment = '';
-    this.email = '';
-    this.phone = '';
-    this.address = '';
-  }
-
-  // валидация данных покупателя
-  // шаг 1 - способ оплаты и адрес
-
-  validateStepOne(): { isValid: boolean; errors: { payment?: string; address?: string } } {
-    const errors: { payment?: string; address?: string } = {};
-
-    if (!this.payment || this.payment === '') {
-      errors.payment = 'Необходимо выбрать способ оплаты';
-    }
-
-    if (!this.address || this.address.trim() === '') {
-      errors.address = 'Необходимо указать адрес';
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors: errors
-    };
-  }
-
-  // валидация данных покупателя
-  // шаг 2 - email и телефон
-
-  validateStepTwo(): { isValid: boolean; errors: { email?: string; phone?: string } } {
-    const errors: { email?: string; phone?: string } = {};
-
-    if (!this.email || this.email.trim() === '') {
-      errors.email = 'Необходимо ввести email';
-    }
-
-    if (!this.phone || this.phone.trim() === '') {
-      errors.phone = 'Необходимо ввести номер телефона';
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors: errors
-    };
-  }
-}
-```
+Методы класса:
+`setData(data: Partial<IBuyer>): void` - сохранение введённых данных в модели
+`getData(): IBuyer` - получение всех данных покупателя
+`clear(): void` - очистка данных покупателя
+`validate()` - валидация данных покупателя
 
 ## Слой коммуникации
 
@@ -330,23 +198,13 @@ class Buyer {
 Получает данные о товарах с сервера.
 Отправляет данные о покупке на сервер.
 
-```
-export class ApiService {
-  private api: Api;
+Поля класса:
+`private api: IApi` - данные с сервера или из data.ts
 
-  принимает данные с сервера или из data.ts
-  constructor(api: Api) {
-    this.api = api;
-  }
+Конструктор:
+`constructor(api: IApi)` - принимает данные с сервера или из data.ts
 
-  // делает get запрос на эндпоинт /product/ и возвращает объект, полученный от сервера, в котором находится массив товаров
-  getProducts(): Promise<IProductsResponse> {
-    return this.api.get<IProductsResponse>('/product/');
-  }
+Методы класса:
+`getProducts(): Promise<IProductsResponse>` - делает get запрос на эндпоинт /product/ и возвращает объект `this.api.get<IProductsResponse>('/product/')`, полученный от сервера, в котором находится массив товаров
 
-  // делает post запрос на эндпоинт /order/ и передаёт в него данные о заказе (список товаров и информация о покупателе), а возвращает объект, подтверждающий покупку на определенную сумму
-  sendOrder(orderData: IOrderRequest): Promise<IOrderResponse> {
-    return this.api.post<IOrderResponse>('/order/', orderData);
-  }
-}
-```
+`sendOrder(orderData: IOrderRequest): Promise<IOrderResponse>` - делает post запрос на эндпоинт /order/ и передаёт в него данные о заказе `this.api.post<IOrderResponse>('/order/', orderData)` (список товаров и информация о покупателе), а возвращает объект, подтверждающий покупку на определенную сумму
