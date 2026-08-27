@@ -16,11 +16,11 @@ export interface IProduct {
 }
 
 // данные по оплате
-export type TPayment = 'card' | 'cash' | '';
+export type TPayment = 'card' | 'cash';
 
 // данные покупателя
 export interface IBuyer {
-  payment: TPayment;
+  payment: TPayment | '';
   email: string;
   phone: string;
   address: string;

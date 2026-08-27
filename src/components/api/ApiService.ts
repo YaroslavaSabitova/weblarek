@@ -1,10 +1,9 @@
-import { Api } from '../base/Api';
-import { IOrderRequest, IProductsResponse, IOrderResponse } from '../../types';
+import { IApi, IOrderRequest, IProductsResponse, IOrderResponse } from '../../types';
 
 export class ApiService {
-  private api: Api;
+  private api: IApi;
 
-  constructor(api: Api) {
+  constructor(api: IApi) {
     this.api = api;
   }
 

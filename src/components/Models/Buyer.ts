@@ -1,7 +1,7 @@
-import { IBuyer } from '../../types';
+import { IBuyer, TPayment } from '../../types';
 
 export class Buyer {
-  private payment: TPayment = ''; // вид/способ оплаты (card/cash - строки)
+  private payment: TPayment | '' = ''; // вид/способ оплаты (card/cash - строки)
   private email: string = ''; // электронный адрес почты
   private phone: string = ''; // телефон (строка)
   private address: string = ''; // адрес (строка с пробелами)
@@ -44,33 +44,34 @@ export class Buyer {
   }
 
   // валидация данных покупателя
-  // шаг 1 - способ оплаты и адрес
-
-  validateStepOne(): {
+  validate(): {
     isValid: boolean;
-    errors: { payment?: string; address?: string };
+    errors: {
+      payment: string;
+      address: string;
+      email: string;
+      phone: string;
+    };
   } {
-    const errors: { payment?: string; address?: string } = {};
+    const errors: {
+      payment: string;
+      address: string;
+      email: string;
+      phone: string;
+    } = {
+      payment: '',
+      address: '',
+      email: '',
+      phone: '',
+    };
 
-    if (!this.payment || this.payment === '') {
+    if (!this.payment || this.payment === null) {
       errors.payment = 'Необходимо выбрать способ оплаты';
     }
 
     if (!this.address || this.address.trim() === '') {
       errors.address = 'Необходимо указать адрес';
     }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors: errors,
-    };
-  }
-
-  // валидация данных покупателя
-  // шаг 2 - email и телефон
-
-  validateStepTwo(): { isValid: boolean; errors: { email?: string; phone?: string } } {
-    const errors: { email?: string; phone?: string } = {};
 
     if (!this.email || this.email.trim() === '') {
       errors.email = 'Необходимо ввести email';
@@ -81,7 +82,7 @@ export class Buyer {
     }
 
     return {
-      isValid: Object.keys(errors).length === 0,
+      isValid: !errors.payment && !errors.address && !errors.email && !errors.phone,
       errors: errors,
     };
   }

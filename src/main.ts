@@ -23,8 +23,7 @@ console.log(
 );
 
 console.log('данные покупателя', buyer.getData());
-console.log('валидация способа оплаты и адреса', buyer.validateStepOne());
-console.log('валидация email и телефона', buyer.validateStepTwo());
+console.log('валидация данных покупателя', buyer.validate());
 
 console.log('товары из корзины', cart.getItems());
 console.log('стоимость всех товаров в корзине', cart.getTotalPrice());
