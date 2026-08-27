@@ -148,48 +148,48 @@ interface IBuyer {
 
 Хранит все товары, которые можно купить в приложении
 
-Поля класса:  
-`items: IProduct[] = []` - массив всех товаров  
-`selectedItem: IProduct | null = null` - товар, выбранный для подробного отображения
+Поля класса: <br>  
+`items: IProduct[] = []` - массив всех товаров <br>  
+`selectedItem: IProduct | null = null` - товар, выбранный для подробного отображения <br>
 
-Методы класса:
-`saveItems(items: IProduct[]): void` - сохранение массива товаров, полученного в параметрах метода
-`getItems(): IProduct[]` - получение массива товаров из модели
-`getItemById(id: string): IProduct | undefined` - получение одного товара по его id
-`saveSelectedItem(item: IProduct): void` - сохранение товара для подробного отображения
-`getSelectedItem(): IProduct | null` - получение товара для подробного отображения
+Методы класса: <br>
+`saveItems(items: IProduct[]): void` - сохранение массива товаров, полученного в параметрах метода <br>
+`getItems(): IProduct[]` - получение массива товаров из модели <br>
+`getItemById(id: string): IProduct | undefined` - получение одного товара по его id <br>
+`saveSelectedItem(item: IProduct): void` - сохранение товара для подробного отображения <br>
+`getSelectedItem(): IProduct | null` - получение товара для подробного отображения <br>
 
 ### Класс Cart
 
 Хранит массив товаров, выбранных покупателем для покупки
 
-Поля класса:
-`items: IProduct[] = []` - товары, которые пользователь выбрал для покупки
+Поля класса:<br>
+`items: IProduct[] = []` - товары, которые пользователь выбрал для покупки <br>
 
-Методы класса:
-`getItems(): IProduct[]` - получение массива товаров, которые находятся в корзине
-`addItem(product: IProduct): void` - добавление товара, который был получен в параметре, в массив корзины
-`removeItem(product: IProduct): void` - удаление товара, полученного в параметре из массива корзины
-`clear(): void` - очистка корзины
-`getTotalPrice(): number` - получение стоимости всех товаров в корзине
-`getCount(): number` - получение количества товаров в корзине
-`hasItem(id: string): boolean` - проверка наличия товара в корзине по его id, полученного в параметр метода
+Методы класса: <br>
+`getItems(): IProduct[]` - получение массива товаров, которые находятся в корзине <br>
+`addItem(product: IProduct): void` - добавление товара, который был получен в параметре, в массив корзины <br>
+`removeItem(product: IProduct): void` - удаление товара, полученного в параметре из массива корзины <br>
+`clear(): void` - очистка корзины <br>
+`getTotalPrice(): number` - получение стоимости всех товаров в корзине <br>
+`getCount(): number` - получение количества товаров в корзине <br>
+`hasItem(id: string): boolean` - проверка наличия товара в корзине по его id, полученного в параметр метода <br>
 
 ### Класс Buyer
 
 Данные покупателя, которые тот должен указать при оформлении заказа
 
-Поля класса:
-`payment: TPayment = ""` - вид/способ оплаты (card/cash - строки)
-`email: string = ""` - электронный адрес почты (строка)
-`phone: string = ""` - телефон (строка)
-`address: string = ""` - адрес доставки (строка с пробелами)
+Поля класса: <br>
+`payment: TPayment = ""` - вид/способ оплаты (card/cash - строки) <br>
+`email: string = ""` - электронный адрес почты (строка) <br>
+`phone: string = ""` - телефон (строка) <br>
+`address: string = ""` - адрес доставки (строка с пробелами) <br>
 
-Методы класса:
-`setData(data: Partial<IBuyer>): void` - сохранение введённых данных в модели
-`getData(): IBuyer` - получение всех данных покупателя
-`clear(): void` - очистка данных покупателя
-`validate()` - валидация данных покупателя
+Методы класса: <br>
+`setData(data: Partial<IBuyer>): void` - сохранение введённых данных в модели <br>
+`getData(): IBuyer` - получение всех данных покупателя <br>
+`clear(): void` - очистка данных покупателя <br>
+`validate()` - валидация данных покупателя <br>
 
 ## Слой коммуникации
 
@@ -198,13 +198,13 @@ interface IBuyer {
 Получает данные о товарах с сервера.
 Отправляет данные о покупке на сервер.
 
-Поля класса:
-`private api: IApi` - данные с сервера или из data.ts
+Поля класса: <br>
+`private api: IApi` - данные с сервера или из data.ts <br>
 
-Конструктор:
-`constructor(api: IApi)` - принимает данные с сервера или из data.ts
+Конструктор: <br>
+`constructor(api: IApi)` - принимает данные с сервера или из data.ts <br>
 
-Методы класса:
-`getProducts(): Promise<IProductsResponse>` - делает get запрос на эндпоинт /product/ и возвращает объект `this.api.get<IProductsResponse>('/product/')`, полученный от сервера, в котором находится массив товаров
+Методы класса: <br>
+`getProducts(): Promise<IProductsResponse>` - делает get запрос на эндпоинт /product/ и возвращает объект `this.api.get<IProductsResponse>('/product/')`, полученный от сервера, в котором находится массив товаров <br>
 
 `sendOrder(orderData: IOrderRequest): Promise<IOrderResponse>` - делает post запрос на эндпоинт /order/ и передаёт в него данные о заказе `this.api.post<IOrderResponse>('/order/', orderData)` (список товаров и информация о покупателе), а возвращает объект, подтверждающий покупку на определенную сумму
