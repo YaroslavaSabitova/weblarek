@@ -22,6 +22,8 @@ import { API_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { TPayment } from './types';
 
+import { Success } from './components/views/Success';
+
 const events = new EventEmitter();
 
 const catalog = new ItemsCatalog();
@@ -43,6 +45,9 @@ const orderForm = new OrderForm(orderFormContainer, events);
 
 const contactsFormContainer = cloneTemplate<HTMLElement>('#contacts');
 const contactsForm = new ContactsForm(contactsFormContainer, events);
+
+const successContainer = cloneTemplate<HTMLElement>('#success');
+const success = new Success(successContainer, events);
 
 // создаём карточки CardCatalog для каждого товара и передаём в Gallery
 function renderGallery() {
@@ -140,7 +145,7 @@ function updateContactsForm() {
 
 // презентер
 
-// клик по корзине
+// клик по корзине в шапке
 events.on('basket:open', () => {
   renderBasket();
   modal.content = basketContainer;
@@ -226,6 +231,13 @@ events.on<{ value: TPayment }>('order.payment:change', data => {
   updateOrderForm();
 });
 
+// открытие формы контактов (клик «Далее» в первой форме)
+events.on('order:submit', () => {
+  // заполняем форму текущими данными
+  updateContactsForm();
+  modal.content = contactsFormContainer;
+});
+
 // ввод email
 events.on<{ value: string }>('contacts.email:change', data => {
   buyer.setData({ email: data.value });
@@ -238,12 +250,48 @@ events.on<{ value: string }>('contacts.phone:change', data => {
   updateContactsForm();
 });
 
-// открытие формы контактов (клик «Далее» в первой форме)
-events.on('order:submit', () => {
-  // заполняем форму текущими данными
-  updateContactsForm();
-  modal.content = contactsFormContainer;
+// делаем заказ (кнопка «Оплатить»)
+
+events.on('contacts:submit', () => {
+  // данные покупателя
+  const buyerData = buyer.getData();
+
+  // данные заказа
+  const orderData = {
+    payment: buyerData.payment as TPayment,
+    email: buyerData.email,
+    phone: buyerData.phone,
+    address: buyerData.address,
+    items: cart.getItems().map(p => p.id),
+    total: cart.getTotalPrice(),
+  };
+
+  // отправляем на сервер
+  apiService
+    .sendOrder(orderData)
+    .then(response => {
+      console.log(`Заказ №${response.id} оформлен на ${response.total} синапсов`);
+
+      // экран успеха
+      success.total = response.total;
+      modal.content = successContainer;
+
+      // очищаем корзину и данные покупателя
+      cart.clear();
+      buyer.clear();
+      header.counter = cart.getCount();
+    })
+    .catch(error => {
+      console.error('Ошибка оформления заказа:', error);
+    });
 });
+
+// за новыми покупками — закрыть модалку
+events.on('success:close', () => {
+  modal.close();
+});
+
+// запуск
 
 apiService
   .getProducts()
