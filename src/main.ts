@@ -14,6 +14,7 @@ import { CardCatalog } from './components/views/CardCatalog';
 
 import { Basket } from './components/views/Basket';
 import { CardBasket } from './components/views/CardBasket';
+import { Modal } from './components/views/Modal';
 
 import { API_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
@@ -99,6 +100,8 @@ const gallery = new Gallery(ensureElement<HTMLElement>('.gallery'));
 
 const basketContainer = cloneTemplate<HTMLElement>('#basket');
 const basket = new Basket(basketContainer, events);
+
+const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
 
 // создаём карточки CardCatalog для каждого товара и передаём в Gallery
 function renderGallery() {
