@@ -13,6 +13,7 @@ import { Gallery } from './components/views/Gallery';
 import { Basket } from './components/views/Basket';
 import { Modal } from './components/views/Modal';
 import { OrderForm } from './components/views/OrderForm';
+import { ContactsForm } from './components/views/ContactsForm';
 import { CardCatalog } from './components/views/CardCatalog';
 import { CardPreview } from './components/views/CardPreview';
 import { CardBasket } from './components/views/CardBasket';
@@ -39,6 +40,9 @@ const basket = new Basket(basketContainer, events);
 
 const orderFormContainer = cloneTemplate<HTMLElement>('#order');
 const orderForm = new OrderForm(orderFormContainer, events);
+
+const contactsFormContainer = cloneTemplate<HTMLElement>('#contacts');
+const contactsForm = new ContactsForm(contactsFormContainer, events);
 
 // создаём карточки CardCatalog для каждого товара и передаём в Gallery
 function renderGallery() {
@@ -83,7 +87,7 @@ function renderBasket() {
   basket.disabled = items.length === 0;
 }
 
-// форма заказа
+// форма заказа 1ый шаг
 function updateOrderForm() {
   const buyerData = buyer.getData();
   const { errors } = buyer.validate();
@@ -108,6 +112,30 @@ function updateOrderForm() {
   orderForm.address = buyerData.address;
   orderForm.errors = orderErrors;
   orderForm.disabled = hasErrors;
+}
+
+// форма заказа 2ой шаг
+function updateContactsForm() {
+  const buyerData = buyer.getData();
+  const { errors } = buyer.validate();
+
+  // ошибки второго шага (email + phone)
+  const errorsList: string[] = [];
+
+  if (errors.email) {
+    errorsList.push(errors.email);
+  }
+  if (errors.phone) {
+    errorsList.push(errors.phone);
+  }
+
+  const contactsErrors = errorsList.join(', ');
+  const hasErrors = errorsList.length > 0;
+
+  contactsForm.email = buyerData.email;
+  contactsForm.phone = buyerData.phone;
+  contactsForm.errors = contactsErrors;
+  contactsForm.disabled = hasErrors;
 }
 
 // презентер
@@ -196,6 +224,25 @@ events.on<{ value: string }>('order.address:change', data => {
 events.on<{ value: TPayment }>('order.payment:change', data => {
   buyer.setData({ payment: data.value });
   updateOrderForm();
+});
+
+// ввод email
+events.on<{ value: string }>('contacts.email:change', data => {
+  buyer.setData({ email: data.value });
+  updateContactsForm();
+});
+
+// ввод телефона
+events.on<{ value: string }>('contacts.phone:change', data => {
+  buyer.setData({ phone: data.value });
+  updateContactsForm();
+});
+
+// открытие формы контактов (клик «Далее» в первой форме)
+events.on('order:submit', () => {
+  // заполняем форму текущими данными
+  updateContactsForm();
+  modal.content = contactsFormContainer;
 });
 
 apiService

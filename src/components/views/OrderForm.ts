@@ -46,7 +46,7 @@ export class OrderForm extends Component<{}> {
       this.events.emit('order.payment:change', { value: 'cash' });
     });
 
-    // квод в поле адреса
+    // ввод в поле адреса
     this.addressInput.addEventListener('input', () => {
       this.events.emit('order.address:change', { value: this.addressInput.value });
     });
