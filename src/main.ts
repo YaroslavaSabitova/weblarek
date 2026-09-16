@@ -12,6 +12,9 @@ import { Header } from './components/views/Header';
 import { Gallery } from './components/views/Gallery';
 import { CardCatalog } from './components/views/CardCatalog';
 
+import { Basket } from './components/views/Basket';
+import { CardBasket } from './components/views/CardBasket';
+
 import { API_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
 
@@ -93,6 +96,9 @@ const apiService = new ApiService(api);
 
 const header = new Header(ensureElement<HTMLElement>('.header'), events);
 const gallery = new Gallery(ensureElement<HTMLElement>('.gallery'));
+
+const basketContainer = cloneTemplate<HTMLElement>('#basket');
+const basket = new Basket(basketContainer, events);
 
 // создаём карточки CardCatalog для каждого товара и передаём в Gallery
 function renderGallery() {
