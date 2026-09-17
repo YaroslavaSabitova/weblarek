@@ -1,20 +1,15 @@
 // форма 2го шага оформления (email + телефон)
 
-import { Component } from '../base/Component';
+import { Form } from './Form';
 import { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
 
-export class ContactsForm extends Component<{}> {
-  protected formElement: HTMLFormElement;
+export class ContactsForm extends Form<{}> {
   protected emailInput: HTMLInputElement;
   protected phoneInput: HTMLInputElement;
-  protected submitButton: HTMLButtonElement;
-  protected errorsElement: HTMLElement;
 
   constructor(container: HTMLElement, protected events: IEvents) {
-    super(container);
-
-    this.formElement = container as HTMLFormElement;
+    super(container, events, 'contacts:submit');
 
     this.emailInput = ensureElement<HTMLInputElement>(
       'input[name="email"]',
@@ -24,11 +19,6 @@ export class ContactsForm extends Component<{}> {
       'input[name="phone"]',
       this.container
     );
-    this.submitButton = ensureElement<HTMLButtonElement>(
-      'button[type="submit"]',
-      this.container
-    );
-    this.errorsElement = ensureElement<HTMLElement>('.form__errors', this.container);
 
     // ввод email
     this.emailInput.addEventListener('input', () => {
@@ -38,12 +28,6 @@ export class ContactsForm extends Component<{}> {
     // ввод телефона
     this.phoneInput.addEventListener('input', () => {
       this.events.emit('contacts.phone:change', { value: this.phoneInput.value });
-    });
-
-    // отправка формы (submit)
-    this.formElement.addEventListener('submit', event => {
-      event.preventDefault();
-      this.events.emit('contacts:submit');
     });
   }
 
@@ -55,15 +39,5 @@ export class ContactsForm extends Component<{}> {
   // установка телефона
   set phone(value: string) {
     this.phoneInput.value = value;
-  }
-
-  // сообщение об ошибке
-  set errors(value: string) {
-    this.errorsElement.textContent = value;
-  }
-
-  // кнопка «Оплатить»
-  set disabled(value: boolean) {
-    this.submitButton.disabled = value;
   }
 }

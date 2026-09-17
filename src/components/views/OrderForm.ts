@@ -1,22 +1,17 @@
 // форма первого шага оформления (способ оплаты + адрес)
 
-import { Component } from '../base/Component';
+import { Form } from './Form';
 import { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
 import { TPayment } from '../../types';
 
-export class OrderForm extends Component<{}> {
-  protected formElement: HTMLFormElement;
+export class OrderForm extends Form<{}> {
   protected cardButton: HTMLButtonElement;
   protected cashButton: HTMLButtonElement;
   protected addressInput: HTMLInputElement;
-  protected submitButton: HTMLButtonElement;
-  protected errorsElement: HTMLElement;
 
   constructor(container: HTMLElement, protected events: IEvents) {
-    super(container);
-
-    this.formElement = container as HTMLFormElement;
+    super(container, events, 'order:submit');
 
     this.cardButton = ensureElement<HTMLButtonElement>(
       'button[name="card"]',
@@ -30,11 +25,6 @@ export class OrderForm extends Component<{}> {
       'input[name="address"]',
       this.container
     );
-    this.submitButton = ensureElement<HTMLButtonElement>(
-      'button[type="submit"]',
-      this.container
-    );
-    this.errorsElement = ensureElement<HTMLElement>('.form__errors', this.container);
 
     // клик по кнопке «Онлайн» (card)
     this.cardButton.addEventListener('click', () => {
@@ -49,12 +39,6 @@ export class OrderForm extends Component<{}> {
     // ввод в поле адреса
     this.addressInput.addEventListener('input', () => {
       this.events.emit('order.address:change', { value: this.addressInput.value });
-    });
-
-    // отправка формы (submit)
-    this.formElement.addEventListener('submit', event => {
-      event.preventDefault();
-      this.events.emit('order:submit');
     });
   }
 
@@ -79,15 +63,5 @@ export class OrderForm extends Component<{}> {
   // значение поля адреса
   set address(value: string) {
     this.addressInput.value = value;
-  }
-
-  // сообщение об ошибке
-  set errors(value: string) {
-    this.errorsElement.textContent = value;
-  }
-
-  // кнопка «Далее»
-  set disabled(value: boolean) {
-    this.submitButton.disabled = value;
   }
 }
