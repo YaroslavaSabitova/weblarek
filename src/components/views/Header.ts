@@ -29,8 +29,6 @@ export class Header extends Component<IHeaderData> {
   }
 
   // счётчик товаров.
-  // Presenter вызывает: `header.counter = cart.getCount();`
-
   set counter(value: number) {
     this.counterElement.textContent = String(value);
   }
