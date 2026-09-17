@@ -5,14 +5,12 @@ import { IEvents } from '../base/Events';
 import { ensureElement } from '../../utils/utils';
 
 export interface ICardBasketData extends ICardData {
-  id: string;
   index: number;
 }
 
 export class CardBasket extends Card<ICardBasketData> {
   protected indexElement: HTMLElement;
   protected deleteButton: HTMLButtonElement;
-  protected cardId: string = '';
 
   constructor(container: HTMLElement, protected events: IEvents) {
     super(container);
@@ -24,13 +22,10 @@ export class CardBasket extends Card<ICardBasketData> {
     );
 
     // говорим презентеру, какой товар убрать из корзины
+    // id из data-атрибута
     this.deleteButton.addEventListener('click', () => {
-      this.events.emit('cart:remove-item', { id: this.cardId });
+      this.events.emit('cart:remove-item', { id: this.container.dataset.id });
     });
-  }
-
-  set id(value: string) {
-    this.cardId = value;
   }
 
   // порядковый номер товара в корзине
