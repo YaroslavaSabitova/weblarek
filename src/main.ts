@@ -172,8 +172,9 @@ events.on<{ item: IProduct }>('catalog:selected', data => {
   renderPreview(data.item);
 });
 
-// изменение содержимого корзины - обновление счётчика в шапке
+// изменение содержимого корзины - перерисовка корзины + обновление счётчика в шапке
 events.on('cart:changed', () => {
+  renderBasket();
   header.counter = cart.getCount();
 });
 
@@ -185,8 +186,12 @@ events.on('buyer:changed', () => {
 
 // клик по корзине в шапке
 events.on('basket:open', () => {
-  renderBasket();
-  modal.content = basketContainer;
+  // кнопка «Оформить» в зависимости от содержимого корзины
+  const isEmpty = cart.getCount() === 0;
+  basket.disabled = isEmpty;
+
+  // готовая разметка корзины в модальное окно через render()
+  modal.content = basket.render();
   modal.open();
 });
 
@@ -218,7 +223,6 @@ events.on<{ id: string }>('card:preview-button-click', data => {
 events.on<{ id: string }>('cart:remove-item', data => {
   const product = catalog.getItemById(data.id);
   if (!product) return;
-
   cart.removeItem(product);
   header.counter = cart.getCount();
   renderBasket();
@@ -226,39 +230,33 @@ events.on<{ id: string }>('cart:remove-item', data => {
 
 // открытие формы заказа (кнопка «Оформить» в корзине)
 events.on('order:open', () => {
-  updateOrderForm();
-  modal.content = orderFormContainer;
+  modal.content = orderForm.render();
+  modal.open();
 });
 
 // изменение адреса в форме заказа
 events.on<{ value: string }>('order.address:change', data => {
   buyer.setData({ address: data.value });
-  updateOrderForm();
 });
 
 // изменение способа оплаты в форме заказа
 events.on<{ value: TPayment }>('order.payment:change', data => {
   buyer.setData({ payment: data.value });
-  updateOrderForm();
 });
 
 // открытие формы контактов (клик «Далее» в первой форме)
 events.on('order:submit', () => {
-  // заполняем форму текущими данными
-  updateContactsForm();
-  modal.content = contactsFormContainer;
+  modal.content = contactsForm.render();
 });
 
 // ввод email
 events.on<{ value: string }>('contacts.email:change', data => {
   buyer.setData({ email: data.value });
-  updateContactsForm();
 });
 
 // ввод телефона
 events.on<{ value: string }>('contacts.phone:change', data => {
   buyer.setData({ phone: data.value });
-  updateContactsForm();
 });
 
 // делаем заказ (кнопка «Оплатить»)
@@ -284,12 +282,11 @@ events.on('contacts:submit', () => {
 
       // экран успеха
       success.total = response.total;
-      modal.content = successContainer;
+      modal.content = success.render();
 
       // очищаем корзину и данные покупателя
       cart.clear();
       buyer.clear();
-      // header.counter = cart.getCount();
     })
     .catch(error => {
       console.error('Ошибка оформления заказа:', error);
