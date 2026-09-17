@@ -17,18 +17,17 @@ import { ContactsForm } from './components/views/ContactsForm';
 import { CardCatalog } from './components/views/CardCatalog';
 import { CardPreview } from './components/views/CardPreview';
 import { CardBasket } from './components/views/CardBasket';
+import { Success } from './components/views/Success';
 
 import { API_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from './utils/utils';
-import { TPayment } from './types';
-
-import { Success } from './components/views/Success';
+import { IProduct, TPayment } from './types';
 
 const events = new EventEmitter();
 
-const catalog = new ItemsCatalog();
-const cart = new Cart();
-const buyer = new Buyer();
+const catalog = new ItemsCatalog(events);
+const cart = new Cart(events);
+const buyer = new Buyer(events);
 
 const api = new Api(API_URL);
 const apiService = new ApiService(api);
@@ -92,15 +91,13 @@ function renderBasket() {
   basket.disabled = items.length === 0;
 }
 
-// форма заказа 1ый шаг
+// форма заказа 1ый шаг (payment + address)
+// вызывается по событию 'buyer:changed', если активна форма заказа
 function updateOrderForm() {
   const buyerData = buyer.getData();
   const { errors } = buyer.validate();
 
-  // первый шаг (payment + address)
-  // непустые ошибки первого шага
   const errorsList: string[] = [];
-
   if (errors.payment) {
     errorsList.push(errors.payment);
   }
@@ -108,25 +105,19 @@ function updateOrderForm() {
     errorsList.push(errors.address);
   }
 
-  const orderErrors = errorsList.join(', ');
-
-  // кнопка «Далее» активна, если нет ошибок первого шага
-  const hasErrors = errorsList.length > 0;
-
   orderForm.payment = buyerData.payment;
   orderForm.address = buyerData.address;
-  orderForm.errors = orderErrors;
-  orderForm.disabled = hasErrors;
+  orderForm.errors = errorsList.join(', ');
+  orderForm.disabled = errorsList.length > 0;
 }
 
-// форма заказа 2ой шаг
+// форма заказа 2ой шаг (email + phone)
 function updateContactsForm() {
   const buyerData = buyer.getData();
   const { errors } = buyer.validate();
 
-  // ошибки второго шага (email + phone)
+  // ошибки второго шага
   const errorsList: string[] = [];
-
   if (errors.email) {
     errorsList.push(errors.email);
   }
@@ -134,16 +125,63 @@ function updateContactsForm() {
     errorsList.push(errors.phone);
   }
 
-  const contactsErrors = errorsList.join(', ');
-  const hasErrors = errorsList.length > 0;
-
   contactsForm.email = buyerData.email;
   contactsForm.phone = buyerData.phone;
-  contactsForm.errors = contactsErrors;
-  contactsForm.disabled = hasErrors;
+  contactsForm.errors = errorsList.join(', ');
+  contactsForm.disabled = errorsList.length > 0;
+}
+
+//  открытие модалки с превью выбранного товара
+//  вызывается по событию 'catalog:selected'
+function renderPreview(product: IProduct) {
+  const previewContainer = cloneTemplate<HTMLElement>('#card-preview');
+  const preview = new CardPreview(previewContainer, events);
+
+  preview.id = product.id;
+  preview.title = product.title;
+  preview.price = product.price;
+  preview.category = product.category;
+  preview.image = product.image;
+  preview.description = product.description;
+
+  // presenter решает, что показать на кнопке
+  if (product.price === null) {
+    preview.buttonText = 'Недоступно';
+    preview.buttonDisabled = true;
+  } else if (cart.hasItem(product.id)) {
+    preview.buttonText = 'Удалить из корзины';
+    preview.buttonDisabled = false;
+  } else {
+    preview.buttonText = 'Купить';
+    preview.buttonDisabled = false;
+  }
+
+  modal.content = previewContainer;
+  modal.open();
 }
 
 // презентер
+
+// изменение каталога товаров - перерисовка галереи
+events.on('catalog:changed', () => {
+  renderGallery();
+});
+
+// изменение выбранного товара - открытие превью
+events.on<{ item: IProduct }>('catalog:selected', data => {
+  renderPreview(data.item);
+});
+
+// изменение содержимого корзины - обновление счётчика в шапке
+events.on('cart:changed', () => {
+  header.counter = cart.getCount();
+});
+
+// изменение данных покупателя - обновление активной формы
+events.on('buyer:changed', () => {
+  updateOrderForm();
+  updateContactsForm();
+});
 
 // клик по корзине в шапке
 events.on('basket:open', () => {
@@ -157,49 +195,22 @@ events.on<{ id: string }>('card:select', data => {
   const product = catalog.getItemById(data.id);
   if (!product) return;
 
+  // сохраняем выбранный товар — catalog:selected - renderPreview()
   catalog.saveSelectedItem(product);
+});
 
-  // превью
-  const previewContainer = cloneTemplate<HTMLElement>('#card-preview');
-  const preview = new CardPreview(previewContainer, events);
+// клик по кнопке купить / удалить из корзины
+events.on<{ id: string }>('card:preview-button-click', data => {
+  const product = catalog.getItemById(data.id);
+  if (!product) return;
+  if (product.price === null) return;
 
-  preview.id = product.id;
-  preview.title = product.title;
-  preview.price = product.price;
-  preview.category = product.category;
-  preview.image = product.image;
-  preview.description = product.description;
-
-  // состояние кнопки
-  if (product.price === null) {
-    preview.buttonState = 'unavailable';
-  } else if (cart.hasItem(product.id)) {
-    preview.buttonState = 'remove';
+  if (cart.hasItem(product.id)) {
+    cart.removeItem(product);
   } else {
-    preview.buttonState = 'add';
+    cart.addItem(product);
   }
 
-  modal.content = previewContainer;
-  modal.open();
-});
-
-// добавление товара в корзину из превью
-events.on<{ id: string }>('card:add-to-cart', data => {
-  const product = catalog.getItemById(data.id);
-  if (!product) return;
-
-  cart.addItem(product);
-  header.counter = cart.getCount();
-  modal.close();
-});
-
-// удаление товара из корзины (из превью)
-events.on<{ id: string }>('card:remove-from-cart', data => {
-  const product = catalog.getItemById(data.id);
-  if (!product) return;
-
-  cart.removeItem(product);
-  header.counter = cart.getCount();
   modal.close();
 });
 
@@ -251,7 +262,6 @@ events.on<{ value: string }>('contacts.phone:change', data => {
 });
 
 // делаем заказ (кнопка «Оплатить»)
-
 events.on('contacts:submit', () => {
   // данные покупателя
   const buyerData = buyer.getData();
@@ -279,7 +289,7 @@ events.on('contacts:submit', () => {
       // очищаем корзину и данные покупателя
       cart.clear();
       buyer.clear();
-      header.counter = cart.getCount();
+      // header.counter = cart.getCount();
     })
     .catch(error => {
       console.error('Ошибка оформления заказа:', error);
