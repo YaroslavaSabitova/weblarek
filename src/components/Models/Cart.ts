@@ -1,7 +1,10 @@
 import { IProduct } from '../../types';
+import { IEvents } from '../base/Events';
 
 export class Cart {
   private items: IProduct[] = []; // товары, которые пользователь выбрал для покупки
+
+  constructor(protected events: IEvents) {}
 
   // получение массива товаров, которые находятся в корзине
   public getItems(): IProduct[] {
@@ -11,6 +14,7 @@ export class Cart {
   // добавление товара, который был получен в параметре, в массив корзины
   public addItem(product: IProduct): void {
     this.items.push(product);
+    this.events.emit('cart:changed', { items: this.items });
   }
 
   // удаление товара, полученного в параметре из массива корзины
@@ -18,6 +22,7 @@ export class Cart {
     const index = this.items.findIndex(item => item.id === product.id);
     if (index !== -1) {
       this.items.splice(index, 1);
+      this.events.emit('cart:changed', { items: this.items });
     } else {
       console.warn(`Товар с id ${product.id} не найден в корзине`);
     }
@@ -26,6 +31,7 @@ export class Cart {
   // очистка корзины
   public clear(): void {
     this.items = [];
+    this.events.emit('cart:changed', { items: this.items });
   }
 
   // получение стоимости всех товаров в корзине
